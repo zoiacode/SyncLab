@@ -1,0 +1,26 @@
+package service.reservation;
+
+import java.sql.Connection;
+import java.util.List;
+
+import dao.ReservationDao;
+import model.Reservation;
+
+public class FetchReservationService {
+    private final ReservationDao reservationDao;
+    public FetchReservationService(Connection connection) {
+        this.reservationDao = new ReservationDao(connection);
+    }
+
+    public List<Reservation> execute(
+    ) throws Exception {
+
+        try {
+            List<Reservation> reservationRef = reservationDao.getAll();
+            return reservationRef;
+        } catch (Exception e) {
+            System.err.println("Erro em FetchReservationService: " + e.getMessage());
+            throw e;
+        }
+    }
+}
