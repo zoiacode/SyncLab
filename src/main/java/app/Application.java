@@ -5,10 +5,13 @@ import com.google.gson.JsonObject;
 
 import dao.DaoConnection;
 import static spark.Spark.after;
+import static spark.Spark.before;
 import static spark.Spark.exception;
+import static spark.Spark.halt;
 import static spark.Spark.port;
 import util.AuthMiddleware;
 import util.Cors;
+import util.JwtUtil;
 
 public class Application {
     public static void main(String[] args) {
@@ -21,6 +24,24 @@ public class Application {
 
         Cors.enableCORS();
         AuthMiddleware.register(connectionObj.getConnection());
+
+        before("/api/*", (req, res) -> {
+
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
+                return;
+            }
+
+            String token = req.cookie("token");
+            if (token == null) {
+                halt(401, "Token ausente");
+            }
+
+            try {
+                JwtUtil.validateToken(token);
+            } catch (Exception e) {
+                halt(401, "Token inválido ou expirado");
+            }
+        });
 
         after((req, res) -> res.type("application/json"));
 
