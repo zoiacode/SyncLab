@@ -12,6 +12,6 @@ WORKDIR /app
 COPY --from=build /app/target/SyncLab-0.0.1-SNAPSHOT-jar-with-dependencies.jar app.jar
 
 
-EXPOSE 4567
+EXPOSE 8082
 
 CMD ["java", "-jar", "app.jar"]
