@@ -12,7 +12,8 @@ import util.Cors;
 
 public class Application {
     public static void main(String[] args) {
-        port(8082);
+        int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
+        port(port);
 
         DaoConnection connectionObj = new DaoConnection();
         connectionObj.conectar();
