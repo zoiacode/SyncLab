@@ -9,7 +9,12 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-            System.out.println("=== COOKIES RECEBIDOS ===");
+
+            System.out.println("=== MIDDLEWARE RECEBEU COOKIES ===");
+            System.out.println("access_token recebido bruto: " + req.cookie("access_token"));
+            System.out.println("refresh_token recebido bruto: " + req.cookie("refresh_token"));
+            System.out.println("===================================");
+
             if ("OPTIONS".equalsIgnoreCase(req.requestMethod()))
                 return;
 
