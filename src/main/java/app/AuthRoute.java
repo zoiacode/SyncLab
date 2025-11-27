@@ -75,18 +75,14 @@ public class AuthRoute {
                         bodyReq.getCredential().getEmail(),
                         bodyReq.getCredential().getPassword());
 
-                String accessTokenCookie = String.format(
-                        "access_token=%s; Max-Age=%d; Path=/; SameSite=None",
-                        response.getAccessToken(),
-                        86400);
+                String accessTokenCookie = "access_token=" + response.getAccessToken() +
+                        "; Max-Age=86400; Path=/; SameSite=None; Secure; HttpOnly";
 
-                String refreshTokenCookie = String.format(
-                        "refresh_token=%s; Max-Age=%d; Path=/; SameSite=None",
-                        response.getRefreshToken(),
-                        604800);
+                String refreshTokenCookie = "refresh_token=" + response.getRefreshToken() +
+                        "; Max-Age=604800; Path=/; SameSite=None; Secure; HttpOnly";
 
-                res.header("Set-Cookie", accessTokenCookie);
-                res.header("Set-Cookie", refreshTokenCookie);
+                res.raw().addHeader("Set-Cookie", accessTokenCookie);
+                res.raw().addHeader("Set-Cookie", refreshTokenCookie);
 
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Login realizado com sucesso!");

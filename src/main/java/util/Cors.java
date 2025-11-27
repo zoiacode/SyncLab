@@ -17,11 +17,11 @@ public class Cors {
 
             String headers = req.headers("Access-Control-Request-Headers");
             if (headers != null)
-                res.header("Access-Control-Allow-Headers", headers);
+                res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
             String methods = req.headers("Access-Control-Request-Method");
             if (methods != null)
-                res.header("Access-Control-Allow-Methods", methods);
+                res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
             return "OK";
         });

@@ -9,7 +9,8 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) return;
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod()))
+                return;
 
             String accessToken = req.cookie("access_token");
             String refreshToken = req.cookie("refresh_token");
@@ -18,25 +19,23 @@ public class AuthMiddleware {
                 if (refreshToken != null && !refreshToken.isEmpty()) {
                     try {
                         RefreshTokenService refreshService = new RefreshTokenService(connection);
-                        accessToken = refreshService.execute(refreshToken);
-                        
-                        // Max-Age = 24 horas * 60 minutos * 60 segundos = 86400
-                        int maxAgeInSeconds = 86400; 
+                        String newAccess = refreshService.execute(refreshToken);
 
-                        String newAccessTokenCookie = String.format(
-                            "access_token=%s; Max-Age=%d; Path=/; SameSite=Lax",
-                            accessToken,
-                            maxAgeInSeconds // AGORA DURA 1 DIA
-                        );
-                        res.header("Set-Cookie", newAccessTokenCookie);
-                        
+                        res.raw().addHeader(
+                                "Set-Cookie",
+                                "access_token=" + newAccess +
+                                        "; Max-Age=86400; Path=/; SameSite=None; Secure; HttpOnly");
+
+                        return;
+
                     } catch (Exception e) {
-                        halt(401, "{\"erro\":\"Token inválido ou expirado. Faça login novamente.\"}");
+                        halt(401, "{\"erro\":\"Refresh inválido. Faça login novamente.\"}");
                     }
-                } else {
-                    halt(401, "{\"erro\":\"Token ausente\"}");
                 }
+
+                halt(401, "{\"erro\":\"Token ausente\"}");
             }
         });
+
     }
 }
