@@ -30,7 +30,7 @@ public class AuthMiddleware {
                         res.raw().addHeader(
                                 "Set-Cookie",
                                 "access_token=" + newAccess +
-                                        "; Max-Age=86400; Path=/; SameSite=None; Secure; HttpOnly");
+                                        "; Max-Age=86400; Path=/; SameSite=None; Secure");
 
                         return;
 
