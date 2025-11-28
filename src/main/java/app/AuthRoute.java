@@ -15,6 +15,7 @@ import service.auth.RegisterCredentialService;
 import static spark.Spark.post;
 
 class CreateAuthRequest {
+
     private Person person;
     private Student student;
     private Admin admin;
@@ -43,6 +44,7 @@ class CreateAuthRequest {
 }
 
 public class AuthRoute {
+
     public static void routes(Gson gson, DaoConnection connectionObj) {
         post("auth/register", (req, res) -> {
             res.type("application/json");
@@ -77,11 +79,22 @@ public class AuthRoute {
 
                 System.out.println("=== LOGIN SERVICE GEROU TOKENS ===");
 
-                String accessTokenCookie = "access_token=" + response.getAccessToken() +
-                        "; Max-Age=86400; Path=/; SameSite=None; Secure";
+                String accessTokenCookie
+                        = "access_token=" + response.getAccessToken()
+                        + "; Max-Age=86400"
+                        + "; Path=/"
+                        + "; SameSite=None"
+                        + "; Secure";
 
-                String refreshTokenCookie = "refresh_token=" + response.getRefreshToken() +
-                        "; Max-Age=604800; Path=/; SameSite=None; Secure";
+                String refreshTokenCookie
+                        = "refresh_token=" + response.getRefreshToken()
+                        + "; Max-Age=604800"
+                        + "; Path=/"
+                        + "; SameSite=None"
+                        + "; Secure";
+
+                res.raw().addHeader("Set-Cookie", accessTokenCookie);
+                res.raw().addHeader("Set-Cookie", refreshTokenCookie);
 
                 res.raw().addHeader("Set-Cookie", accessTokenCookie);
                 res.raw().addHeader("Set-Cookie", refreshTokenCookie);
@@ -103,8 +116,11 @@ public class AuthRoute {
         post("auth/logout", (req, res) -> {
             res.type("application/json");
             try {
-                res.removeCookie("/", "access_token");
-                res.removeCookie("/", "refresh_token");
+                res.raw().addHeader("Set-Cookie",
+    "access_token=; Max-Age=0; Path=/; SameSite=None; Secure");
+
+res.raw().addHeader("Set-Cookie",
+    "refresh_token=; Max-Age=0; Path=/; SameSite=None; Secure");
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Logout realizado com sucesso!");
                 return gson.toJson(resposta);
