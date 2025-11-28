@@ -19,6 +19,7 @@ import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
+import util.JwtUtil;
 
 public class PersonRoute {
     public static void routes(Gson gson, DaoConnection connectionObj) {
@@ -45,7 +46,6 @@ public class PersonRoute {
                     res.status(200);
                     return gson.toJson(listaPessoasJson);
                 }
-                
     
                 return gson.toJson(listaPessoasJson);
 
@@ -64,6 +64,9 @@ public class PersonRoute {
             try {
                 UUID id = UUID.fromString(req.params("id")); 
                 GetPersonByIdService service = new GetPersonByIdService(connectionObj.getConnection());
+                String jwtToken = req.cookie("access_token");
+                UUID personId = JwtUtil.extractPersonId(jwtToken);
+                System.out.println(personId.toString());
                 Person person = service.execute(id);
 
                 if (person == null) {
@@ -73,7 +76,6 @@ public class PersonRoute {
                     return gson.toJson(erro);
                 }
 
-                System.out.println(person.getName());
 
                 return gson.toJson(person);
 
