@@ -73,6 +73,8 @@ public class PersonRoute {
                     return gson.toJson(erro);
                 }
 
+                System.out.println(person.getName());
+
                 return gson.toJson(person);
 
             } catch (IllegalArgumentException e) {
