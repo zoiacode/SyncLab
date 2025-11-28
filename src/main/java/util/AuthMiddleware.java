@@ -11,11 +11,6 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-
-            System.out.println("=== MIDDLEWARE RECEBEU COOKIES ===");
-            System.out.println("access_token recebido bruto: " + req.cookie("access_token"));
-            System.out.println("refresh_token recebido bruto: " + req.cookie("refresh_token"));
-            System.out.println("===================================");
             String accessToken = null;
 
             Cookie[] cookie = req.raw().getCookies();
@@ -46,11 +41,9 @@ public class AuthMiddleware {
 
                 }
             } else {
-                try {
-                    JwtUtil.validateToken(accessToken);
-                } catch (Exception e) {
-                    halt(401, "Token inválido ou expirado");
-                }
+
+                JwtUtil.validateToken(accessToken);
+
             }
 
             if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
