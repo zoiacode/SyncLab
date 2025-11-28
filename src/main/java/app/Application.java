@@ -20,7 +20,7 @@ public class Application {
         connectionObj.conectar();
         Gson gson = new Gson();
 
-        Cors.enableCORS(); // <-- agora funciona
+        Cors.enableCORS(); 
 
         AuthMiddleware.register(connectionObj.getConnection());
 

@@ -13,6 +13,7 @@ import service.auth.LoginService;
 import service.auth.LoginService.AuthResponse;
 import service.auth.RegisterCredentialService;
 import static spark.Spark.post;
+import util.JwtEncap;
 
 class CreateAuthRequest {
     private Person person;
@@ -52,7 +53,7 @@ public class AuthRoute {
             }
         });
 
-        post("auth/login", (req, res) -> {
+    post("auth/login", (req, res) -> {
     res.type("application/json");
     CreateAuthRequest bodyReq = gson.fromJson(req.body(), CreateAuthRequest.class);
     LoginService service = new LoginService(connectionObj.getConnection());
@@ -74,12 +75,12 @@ public class AuthRoute {
             response.getRefreshToken(),
             604800
         );
-        
-        res.header("Set-Cookie", accessTokenCookie);
-        res.header("Set-Cookie", refreshTokenCookie);
+
+        JwtEncap jwtEncap = new JwtEncap(accessTokenCookie, refreshTokenCookie);
 
         JsonObject resposta = new JsonObject();
-        resposta.addProperty("mensagem", "Login realizado com sucesso!");
+        
+        resposta.add("token", gson.toJsonTree(jwtEncap));
         return gson.toJson(resposta);
     } catch (Exception e) {
         res.status(400);
