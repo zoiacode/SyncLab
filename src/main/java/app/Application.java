@@ -25,24 +25,6 @@ public class Application {
         Cors.enableCORS();
         AuthMiddleware.register(connectionObj.getConnection());
 
-        before("/api/*", (req, res) -> {
-
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
-                return;
-            }
-
-            String token = req.cookie("token");
-            if (token == null) {
-                halt(401, "Token ausente");
-            }
-
-            try {
-                JwtUtil.validateToken(token);
-            } catch (Exception e) {
-                halt(401, "Token inválido ou expirado");
-            }
-        });
-
         after((req, res) -> res.type("application/json"));
 
         exception(Exception.class, (e, req, res) -> {

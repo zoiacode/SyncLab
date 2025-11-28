@@ -15,9 +15,6 @@ public class AuthMiddleware {
             System.out.println("refresh_token recebido bruto: " + req.cookie("refresh_token"));
             System.out.println("===================================");
 
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod()))
-                return;
-
             String accessToken = req.cookie("access_token");
             String refreshToken = req.cookie("refresh_token");
 
@@ -32,15 +29,25 @@ public class AuthMiddleware {
                                 "access_token=" + newAccess +
                                         "; Max-Age=86400; Path=/; SameSite=None; Secure");
 
-                        return;
-
                     } catch (Exception e) {
                         halt(401, "{\"erro\":\"Refresh inválido. Faça login novamente.\"}");
                     }
-                }
+                } else {
+                    halt(401, "{\"erro\":\"Token ausente\"}");
 
-                halt(401, "{\"erro\":\"Token ausente\"}");
+                }
+            } else {
+                try {
+                    JwtUtil.validateToken(accessToken);
+                } catch (Exception e) {
+                    halt(401, "Token inválido ou expirado");
+                }
             }
+
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
+                return;
+            }
+
         });
 
     }
