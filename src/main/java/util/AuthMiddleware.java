@@ -14,6 +14,8 @@ public class AuthMiddleware {
             String accessToken = req.cookie("access_token");
             String refreshToken = req.cookie("refresh_token");
 
+            System.out.print(accessToken);
+
             if (accessToken == null || accessToken.isEmpty()) {
                 if (refreshToken != null && !refreshToken.isEmpty()) {
                     try {
