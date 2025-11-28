@@ -6,7 +6,7 @@ import static spark.Spark.options;
 public class Cors {
     public static void enableCORS() {
         before((req, res) -> {
-            res.header("Access-Control-Allow-Origin", "https://sync-lab-front-olive.vercel.app");
+            res.header("Access-Control-Allow-Origin", "https://sync-lab-front-fifz5d8uk-pedroitalobcs-projects.vercel.app");
             res.header("Access-Control-Expose-Headers", "Set-Cookie");
             res.header("Access-Control-Allow-Credentials", "true");
             res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
