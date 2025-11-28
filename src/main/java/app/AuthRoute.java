@@ -76,10 +76,10 @@ public class AuthRoute {
                         bodyReq.getCredential().getPassword());
 
                 String accessTokenCookie = "access_token=" + response.getAccessToken() +
-                        "; Max-Age=86400; Path=/; SameSite=None; Secure; HttpOnly";
+                        "; Max-Age=86400; Path=/; SameSite=None; Secure";
 
                 String refreshTokenCookie = "refresh_token=" + response.getRefreshToken() +
-                        "; Max-Age=604800; Path=/; SameSite=None; Secure; HttpOnly";
+                        "; Max-Age=604800; Path=/; SameSite=None; Secure";
 
                 res.raw().addHeader("Set-Cookie", accessTokenCookie);
                 res.raw().addHeader("Set-Cookie", refreshTokenCookie);
