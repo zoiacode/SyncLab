@@ -2,8 +2,6 @@ package util;
 
 import java.sql.Connection;
 
-import javax.servlet.http.Cookie;
-
 import service.auth.RefreshTokenService;
 import static spark.Spark.before;
 import static spark.Spark.halt;
@@ -11,15 +9,10 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-            String accessToken = null;
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod()))
+                return;
 
-            Cookie[] cookie = req.raw().getCookies();
-            for (Cookie c : cookie) {
-                if ("access_token".equals(c.getName())) {
-                    accessToken = c.getValue();
-                }
-            }
-            System.out.println(accessToken);
+            String accessToken = req.cookie("access_token");
             String refreshToken = req.cookie("refresh_token");
 
             if (accessToken == null || accessToken.isEmpty()) {
@@ -38,19 +31,10 @@ public class AuthMiddleware {
                     }
                 } else {
                     halt(401, "{\"erro\":\"Token ausente\"}");
-
                 }
             } else {
-
                 JwtUtil.validateToken(accessToken);
-
             }
-
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
-                return;
-            }
-
         });
-
     }
 }

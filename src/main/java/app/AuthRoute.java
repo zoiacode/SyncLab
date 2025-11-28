@@ -75,8 +75,6 @@ public class AuthRoute {
                         bodyReq.getCredential().getEmail(),
                         bodyReq.getCredential().getPassword());
 
-                System.out.println("=== LOGIN SERVICE GEROU TOKENS ===");
-
                 String accessTokenCookie = "access_token=" + response.getAccessToken() +
                         "; Max-Age=86400; Path=/; SameSite=None; Secure";
 
@@ -85,10 +83,6 @@ public class AuthRoute {
 
                 res.raw().addHeader("Set-Cookie", accessTokenCookie);
                 res.raw().addHeader("Set-Cookie", refreshTokenCookie);
-
-                System.out.println("access_token enviado no cookie: " + accessTokenCookie);
-                System.out.println("refresh_token enviado no cookie: " + refreshTokenCookie);
-                System.out.println("===================================");
 
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Login realizado com sucesso!");
@@ -100,11 +94,12 @@ public class AuthRoute {
                 return gson.toJson(erro);
             }
         });
+
         post("auth/logout", (req, res) -> {
             res.type("application/json");
             try {
-                res.removeCookie("/", "access_token");
-                res.removeCookie("/", "refresh_token");
+                res.raw().addHeader("Set-Cookie", "access_token=; Max-Age=0; Path=/; SameSite=None; Secure");
+                res.raw().addHeader("Set-Cookie", "refresh_token=; Max-Age=0; Path=/; SameSite=None; Secure");
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Logout realizado com sucesso!");
                 return gson.toJson(resposta);
