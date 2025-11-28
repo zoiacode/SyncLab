@@ -28,7 +28,7 @@ public class AuthMiddleware {
                         String newAccessTokenCookie = String.format(
                             "access_token=%s; Max-Age=%d; Path=/; SameSite=None",
                             accessToken,
-                            maxAgeInSeconds // AGORA DURA 1 DIA
+                            maxAgeInSeconds
                         );
                         res.header("Set-Cookie", newAccessTokenCookie);
                         

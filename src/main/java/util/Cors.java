@@ -12,6 +12,8 @@ public class Cors {
             res.header("Access-Control-Allow-Credentials", "true");
             res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
             res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+            System.out.print(req.cookie("access_token"));
         });
 
         options("/*", (req, res) -> {
