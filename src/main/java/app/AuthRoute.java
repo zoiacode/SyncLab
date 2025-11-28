@@ -76,10 +76,14 @@ public class AuthRoute {
                         bodyReq.getCredential().getPassword());
 
                 String accessTokenCookie = "access_token=" + response.getAccessToken() +
-                        "; Max-Age=86400; Path=/; SameSite=None; Secure";
+                        "; Max-Age=86400" +
+                        "; Path=/" +
+                        "; Domain=.synclab.app" +
+                        "; SameSite=None" +
+                        "; Secure";
 
                 String refreshTokenCookie = "refresh_token=" + response.getRefreshToken() +
-                        "; Max-Age=604800; Path=/; SameSite=None; Secure";
+                        "; Max-Age=604800; Path=/; Domain=.synclab.app; SameSite=None; Secure";
 
                 res.raw().addHeader("Set-Cookie", accessTokenCookie);
                 res.raw().addHeader("Set-Cookie", refreshTokenCookie);
