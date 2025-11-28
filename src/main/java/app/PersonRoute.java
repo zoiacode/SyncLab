@@ -23,51 +23,46 @@ import util.JwtUtil;
 
 public class PersonRoute {
     public static void routes(Gson gson, DaoConnection connectionObj) {
-        
+
         get("api/person", (req, res) -> {
             res.type("application/json");
 
             FetchPersonService service = new FetchPersonService(connectionObj.getConnection());
 
             try {
-                
+
                 List<Person> people = service.execute();
 
-                
                 JsonArray listaPessoasJson = new JsonArray();
 
-                
                 for (Person person : people) {
                     listaPessoasJson.add(gson.toJsonTree(person));
                 }
 
-                
                 if (listaPessoasJson.size() == 0) {
                     res.status(200);
                     return gson.toJson(listaPessoasJson);
                 }
-    
+
                 return gson.toJson(listaPessoasJson);
 
             } catch (Exception e) {
-                res.status(500); 
+                res.status(500);
                 JsonObject erro = new JsonObject();
                 erro.addProperty("erro", "Erro ao buscar a lista de pessoas: " + e.getMessage());
                 return gson.toJson(erro);
             }
         });
-        
-        
-        get("api/person/:id", (req, res) -> {
+
+        get("api/person/self", (req, res) -> {
             res.type("application/json");
-            
+
             try {
-                UUID id = UUID.fromString(req.params("id")); 
                 GetPersonByIdService service = new GetPersonByIdService(connectionObj.getConnection());
                 String jwtToken = req.cookie("access_token");
                 UUID personId = JwtUtil.extractPersonId(jwtToken);
                 System.out.println(personId.toString());
-                Person person = service.execute(id);
+                Person person = service.execute(personId);
 
                 if (person == null) {
                     res.status(404);
@@ -75,7 +70,6 @@ public class PersonRoute {
                     erro.addProperty("erro", "Pessoa não encontrada!");
                     return gson.toJson(erro);
                 }
-
 
                 return gson.toJson(person);
 
@@ -91,12 +85,43 @@ public class PersonRoute {
                 return gson.toJson(erro);
             }
         });
-        
-      
-        
+
+        get("api/person/:id", (req, res) -> {
+            res.type("application/json");
+
+            try {
+                UUID id = UUID.fromString(req.params("id"));
+                GetPersonByIdService service = new GetPersonByIdService(connectionObj.getConnection());
+                String jwtToken = req.cookie("access_token");
+                UUID personId = JwtUtil.extractPersonId(jwtToken);
+                System.out.println(personId.toString());
+                Person person = service.execute(id);
+
+                if (person == null) {
+                    res.status(404);
+                    JsonObject erro = new JsonObject();
+                    erro.addProperty("erro", "Pessoa não encontrada!");
+                    return gson.toJson(erro);
+                }
+
+                return gson.toJson(person);
+
+            } catch (IllegalArgumentException e) {
+                res.status(400);
+                JsonObject erro = new JsonObject();
+                erro.addProperty("erro", "ID no formato inválido.");
+                return gson.toJson(erro);
+            } catch (Exception e) {
+                res.status(400);
+                JsonObject erro = new JsonObject();
+                erro.addProperty("erro", e.getMessage());
+                return gson.toJson(erro);
+            }
+        });
+
         get("api/person/cpf/:cpf", (req, res) -> {
             res.type("application/json");
-            String cpfParam = req.params("cpf"); 
+            String cpfParam = req.params("cpf");
 
             GetPersonByCpfService service = new GetPersonByCpfService(connectionObj.getConnection());
 
@@ -119,16 +144,12 @@ public class PersonRoute {
                 return gson.toJson(erro);
             }
         });
-        
-        
-        
+
         post("api/person", (req, res) -> {
             res.type("application/json");
 
             Person bodyReq = gson.fromJson(req.body(), Person.class);
 
-            
-        
             CreatePersonService service = new CreatePersonService(connectionObj.getConnection());
 
             try {
@@ -139,10 +160,9 @@ public class PersonRoute {
                         bodyReq.getBirthDate(),
                         bodyReq.getProfileUrl(),
                         bodyReq.getDescription(),
-                        null, 
+                        null,
                         bodyReq.getPersonCode(),
-                        bodyReq.getRole()
-                );
+                        bodyReq.getRole());
 
                 res.status(201);
                 return gson.toJson(person);
@@ -155,7 +175,6 @@ public class PersonRoute {
             }
         });
 
-        
         put("api/person/:id", (req, res) -> {
             res.type("application/json");
             try {
@@ -166,7 +185,8 @@ public class PersonRoute {
                 if (bodyString == null || bodyString.isEmpty() || bodyString.equals("null")) {
                     res.status(400);
                     JsonObject erro = new JsonObject();
-                    erro.addProperty("erro", "Corpo da requisição ausente ou vazio. Verifique Content-Type no frontend.");
+                    erro.addProperty("erro",
+                            "Corpo da requisição ausente ou vazio. Verifique Content-Type no frontend.");
                     res.body(gson.toJson(erro)); // Define o corpo de erro
                     return res.body(); // Retorna o corpo (String JSON)
                 }
@@ -178,12 +198,11 @@ public class PersonRoute {
                 UpdatePersonService service = new UpdatePersonService(connectionObj.getConnection());
 
                 Person person = service.execute(
-                    jsonReq.getId(),
-                    jsonReq.getName(),
-                    jsonReq.getProfileUrl(),
-                    jsonReq.getDescription(),
-                    jsonReq.getPersonCode()
-                );
+                        jsonReq.getId(),
+                        jsonReq.getName(),
+                        jsonReq.getProfileUrl(),
+                        jsonReq.getDescription(),
+                        jsonReq.getPersonCode());
 
                 // CAMINHO DE SUCESSO
                 res.status(200);
@@ -191,10 +210,9 @@ public class PersonRoute {
                 resposta.addProperty("mensagem", "Pessoa atualizada com sucesso!");
                 resposta.addProperty("id", person.getId().toString());
                 resposta.addProperty("cpf", person.getCpf());
-                
+
                 res.body(gson.toJson(resposta)); // Define o corpo de sucesso
                 return res.body(); // Retorna o corpo (String JSON)
-
 
             } catch (IllegalArgumentException e) {
                 res.status(400);
@@ -210,14 +228,13 @@ public class PersonRoute {
             }
         });
 
-
         delete("api/person/:id", (req, res) -> {
             res.type("application/json");
-            
+
             try {
-                UUID id = UUID.fromString(req.params("id")); 
+                UUID id = UUID.fromString(req.params("id"));
                 DeletePersonByIdService service = new DeletePersonByIdService(connectionObj.getConnection());
-                
+
                 Person person = service.execute(id);
 
                 if (person == null) {
@@ -246,6 +263,6 @@ public class PersonRoute {
                 return gson.toJson(erro);
             }
         });
-        
+
     }
 }
