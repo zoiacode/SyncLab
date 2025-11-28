@@ -5,20 +5,23 @@ import com.google.gson.JsonObject;
 
 import dao.DaoConnection;
 import static spark.Spark.after;
+import static spark.Spark.awaitInitialization;
 import static spark.Spark.exception;
+import static spark.Spark.init;
 import static spark.Spark.port;
 import util.AuthMiddleware;
 import util.Cors;
 
 public class Application {
     public static void main(String[] args) {
-        port(8082);
+        port(8080);
 
         DaoConnection connectionObj = new DaoConnection();
         connectionObj.conectar();
         Gson gson = new Gson();
 
-        Cors.enableCORS();
+        Cors.enableCORS(); // <-- agora funciona
+
         AuthMiddleware.register(connectionObj.getConnection());
 
         after((req, res) -> res.type("application/json"));
@@ -43,5 +46,8 @@ public class Application {
         BuildingRoute.routes(gson, connectionObj);
         UploadRoute.routes(gson);
         CourseRoute.routes(gson, connectionObj);
+
+        init();
+        awaitInitialization();
     }
 }
