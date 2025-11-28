@@ -5,7 +5,7 @@ import static spark.Spark.options;
 
 public class Cors {
     public static void enableCORS() {
-        String origin = "https://sync-lab-front-fifz5d8uk-pedroitalobcs-projects.vercel.app";
+        String origin = "https://sync-lab-front-olive.vercel.app";
 
         before((req, res) -> {
             res.header("Access-Control-Allow-Origin", origin);

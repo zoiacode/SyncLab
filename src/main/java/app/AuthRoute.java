@@ -77,7 +77,7 @@ public class AuthRoute {
         );
 
         JwtEncap jwtEncap = new JwtEncap(accessTokenCookie, refreshTokenCookie);
-
+        
         JsonObject resposta = new JsonObject();
         
         resposta.add("token", gson.toJsonTree(jwtEncap));
