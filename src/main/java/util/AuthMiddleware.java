@@ -24,7 +24,7 @@ public class AuthMiddleware {
                         res.raw().addHeader(
                                 "Set-Cookie",
                                 "access_token=" + newAccess +
-                                        "; Max-Age=86400; Path=/; SameSite=None; Secure");
+                                        "; Max-Age=86400; Path=/; Domain=.synclab.app; SameSite=None; Secure");
 
                     } catch (Exception e) {
                         halt(401, "{\"erro\":\"Refresh inválido. Faça login novamente.\"}");
