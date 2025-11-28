@@ -5,18 +5,14 @@ import com.google.gson.JsonObject;
 
 import dao.DaoConnection;
 import static spark.Spark.after;
-import static spark.Spark.before;
 import static spark.Spark.exception;
-import static spark.Spark.halt;
 import static spark.Spark.port;
 import util.AuthMiddleware;
 import util.Cors;
-import util.JwtUtil;
 
 public class Application {
     public static void main(String[] args) {
-        int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
-        port(port);
+        port(8082);
 
         DaoConnection connectionObj = new DaoConnection();
         connectionObj.conectar();

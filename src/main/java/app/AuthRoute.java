@@ -15,36 +15,20 @@ import service.auth.RegisterCredentialService;
 import static spark.Spark.post;
 
 class CreateAuthRequest {
-
     private Person person;
     private Student student;
     private Admin admin;
     private Professor professor;
     private Credential credential;
 
-    public Person getPerson() {
-        return person;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public Admin getAdmin() {
-        return admin;
-    }
-
-    public Professor getProfessor() {
-        return professor;
-    }
-
-    public Credential getCredential() {
-        return credential;
-    }
+    public Person getPerson() { return person; }
+    public Student getStudent() { return student; }
+    public Admin getAdmin() { return admin; }
+    public Professor getProfessor() { return professor; }
+    public Credential getCredential() { return credential; }
 }
 
 public class AuthRoute {
-
     public static void routes(Gson gson, DaoConnection connectionObj) {
         post("auth/register", (req, res) -> {
             res.type("application/json");
@@ -53,9 +37,10 @@ public class AuthRoute {
 
             try {
                 service.execute(
-                        bodyReq.getCredential().getEmail(),
-                        bodyReq.getCredential().getPassword(),
-                        bodyReq.getPerson().getId());
+                    bodyReq.getCredential().getEmail(),
+                    bodyReq.getCredential().getPassword(),
+                    bodyReq.getPerson().getId()
+                );
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Credenciais cadastradas com sucesso!");
                 return gson.toJson(resposta);
@@ -68,59 +53,46 @@ public class AuthRoute {
         });
 
         post("auth/login", (req, res) -> {
-            res.type("application/json");
-            CreateAuthRequest bodyReq = gson.fromJson(req.body(), CreateAuthRequest.class);
-            LoginService service = new LoginService(connectionObj.getConnection());
+    res.type("application/json");
+    CreateAuthRequest bodyReq = gson.fromJson(req.body(), CreateAuthRequest.class);
+    LoginService service = new LoginService(connectionObj.getConnection());
 
-            try {
-                AuthResponse response = service.execute(
-                        bodyReq.getCredential().getEmail(),
-                        bodyReq.getCredential().getPassword());
+    try {
+        AuthResponse response = service.execute(
+            bodyReq.getCredential().getEmail(),
+            bodyReq.getCredential().getPassword()
+        );
+        
+        String accessTokenCookie = String.format(
+            "access_token=%s; Max-Age=%d; Path=/; SameSite=None",
+            response.getAccessToken(),
+            86400
+        );
 
-                System.out.println("=== LOGIN SERVICE GEROU TOKENS ===");
+        String refreshTokenCookie = String.format(
+            "refresh_token=%s; Max-Age=%d; Path=/; SameSite=None",
+            response.getRefreshToken(),
+            604800
+        );
+        
+        res.header("Set-Cookie", accessTokenCookie);
+        res.header("Set-Cookie", refreshTokenCookie);
 
-                String accessTokenCookie
-                        = "access_token=" + response.getAccessToken()
-                        + "; Max-Age=86400"
-                        + "; Path=/"
-                        + "; SameSite=None"
-                        + "; Secure";
-
-                String refreshTokenCookie
-                        = "refresh_token=" + response.getRefreshToken()
-                        + "; Max-Age=604800"
-                        + "; Path=/"
-                        + "; SameSite=None"
-                        + "; Secure";
-
-                res.raw().addHeader("Set-Cookie", accessTokenCookie);
-                res.raw().addHeader("Set-Cookie", refreshTokenCookie);
-
-                res.raw().addHeader("Set-Cookie", accessTokenCookie);
-                res.raw().addHeader("Set-Cookie", refreshTokenCookie);
-
-                System.out.println("access_token enviado no cookie: " + accessTokenCookie);
-                System.out.println("refresh_token enviado no cookie: " + refreshTokenCookie);
-                System.out.println("===================================");
-
-                JsonObject resposta = new JsonObject();
-                resposta.addProperty("mensagem", "Login realizado com sucesso!");
-                return gson.toJson(resposta);
-            } catch (Exception e) {
-                res.status(400);
-                JsonObject erro = new JsonObject();
-                erro.addProperty("erro", e.getMessage());
-                return gson.toJson(erro);
-            }
-        });
+        JsonObject resposta = new JsonObject();
+        resposta.addProperty("mensagem", "Login realizado com sucesso!");
+        return gson.toJson(resposta);
+    } catch (Exception e) {
+        res.status(400);
+        JsonObject erro = new JsonObject();
+        erro.addProperty("erro", e.getMessage());
+        return gson.toJson(erro);
+    }
+});
         post("auth/logout", (req, res) -> {
             res.type("application/json");
             try {
-                res.raw().addHeader("Set-Cookie",
-    "access_token=; Max-Age=0; Path=/; SameSite=None; Secure");
-
-res.raw().addHeader("Set-Cookie",
-    "refresh_token=; Max-Age=0; Path=/; SameSite=None; Secure");
+                res.removeCookie("/", "access_token");
+                res.removeCookie("/", "refresh_token");
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("mensagem", "Logout realizado com sucesso!");
                 return gson.toJson(resposta);

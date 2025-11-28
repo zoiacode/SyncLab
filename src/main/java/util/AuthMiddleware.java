@@ -9,43 +9,32 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-
-            // Liberar OPTIONS antes de qualquer validação
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
-                res.status(200);
-                return;
-            }
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) return;
 
             String accessToken = req.cookie("access_token");
             String refreshToken = req.cookie("refresh_token");
 
             if (accessToken == null || accessToken.isEmpty()) {
-
                 if (refreshToken != null && !refreshToken.isEmpty()) {
                     try {
                         RefreshTokenService refreshService = new RefreshTokenService(connection);
-                        String newAccess = refreshService.execute(refreshToken);
+                        accessToken = refreshService.execute(refreshToken);
+                        
+                        // Max-Age = 24 horas * 60 minutos * 60 segundos = 86400
+                        int maxAgeInSeconds = 86400; 
 
-                        res.raw().addHeader(
-                                "Set-Cookie",
-                                "access_token=" + newAccess +
-                                        "; Max-Age=86400; Path=/; SameSite=None; Secure");
-
-                        // NÃO fazer halt aqui — permitir que a rota continue
-                        return;
-
+                        String newAccessTokenCookie = String.format(
+                            "access_token=%s; Max-Age=%d; Path=/; SameSite=None",
+                            accessToken,
+                            maxAgeInSeconds // AGORA DURA 1 DIA
+                        );
+                        res.header("Set-Cookie", newAccessTokenCookie);
+                        
                     } catch (Exception e) {
-                        halt(401, "{\"erro\":\"Refresh inválido. Faça login novamente.\"}");
+                        halt(401, "{\"erro\":\"Token inválido ou expirado. Faça login novamente.\"}");
                     }
-                }
-
-                halt(401, "{\"erro\":\"Token ausente\"}");
-            } else {
-
-                try {
-                    JwtUtil.validateToken(accessToken);
-                } catch (Exception e) {
-                    halt(401, "{\"erro\":\"Token inválido\"}");
+                } else {
+                    halt(401, "{\"erro\":\"Token ausente\"}");
                 }
             }
         });
