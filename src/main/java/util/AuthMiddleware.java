@@ -2,6 +2,8 @@ package util;
 
 import java.sql.Connection;
 
+import javax.servlet.http.Cookie;
+
 import service.auth.RefreshTokenService;
 import static spark.Spark.before;
 import static spark.Spark.halt;
@@ -9,36 +11,46 @@ import static spark.Spark.halt;
 public class AuthMiddleware {
     public static void register(Connection connection) {
         before("/api/*", (req, res) -> {
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) return;
+            String accessToken = null;
 
-            String accessToken = req.cookie("access_token");
+            Cookie[] cookie = req.raw().getCookies();
+            for (Cookie c : cookie) {
+                if ("access_token".equals(c.getName())) {
+                    accessToken = c.getValue();
+                }
+            }
+            System.out.println(accessToken);
             String refreshToken = req.cookie("refresh_token");
-
-            System.out.print(accessToken);
 
             if (accessToken == null || accessToken.isEmpty()) {
                 if (refreshToken != null && !refreshToken.isEmpty()) {
                     try {
                         RefreshTokenService refreshService = new RefreshTokenService(connection);
-                        accessToken = refreshService.execute(refreshToken);
-                        
-                        // Max-Age = 24 horas * 60 minutos * 60 segundos = 86400
-                        int maxAgeInSeconds = 86400; 
+                        String newAccess = refreshService.execute(refreshToken);
 
-                        String newAccessTokenCookie = String.format(
-                            "access_token=%s; Max-Age=%d; Path=/; SameSite=None",
-                            accessToken,
-                            maxAgeInSeconds
-                        );
-                        res.header("Set-Cookie", newAccessTokenCookie);
-                        
+                        res.raw().addHeader(
+                                "Set-Cookie",
+                                "access_token=" + newAccess +
+                                        "; Max-Age=86400; Path=/; SameSite=None; Secure");
+
                     } catch (Exception e) {
-                        halt(401, "{\"erro\":\"Token inválido ou expirado. Faça login novamente.\"}");
+                        halt(401, "{\"erro\":\"Refresh inválido. Faça login novamente.\"}");
                     }
                 } else {
                     halt(401, "{\"erro\":\"Token ausente\"}");
+
                 }
+            } else {
+
+                JwtUtil.validateToken(accessToken);
+
             }
+
+            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
+                return;
+            }
+
         });
+
     }
 }
